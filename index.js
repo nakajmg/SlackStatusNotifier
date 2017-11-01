@@ -1,6 +1,7 @@
 const Slack = require('slack-node')
 const request = require('axios')
 const URI = process.env.ENV_SLACK_HOOK
+console.log(URI)
 const slack = new Slack()
 slack.setWebhook(URI)
 
@@ -25,7 +26,8 @@ const employees = [
   'yomotsu'
 ]
 
-const token = proess.env.ENV_SLACK_TOKEN
+const token = process.env.ENV_SLACK_TOKEN
+console.log(token)
 const options = {
   url: 'https://slack.com/api/users.list',
   method: 'POST',
