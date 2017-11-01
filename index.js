@@ -3,7 +3,7 @@ const request = require('axios')
 const mongoose = require('mongoose')
 const _ = require('lodash')
 const slack = new Slack()
-const URI = process.env.ENV_SLACK_HOOK
+const URI = process.env.ENV_SLACK_HOOK || require('./.env').ENV_SLACK_HOOK
 slack.setWebhook(URI)
 
 const employees = [
@@ -27,7 +27,7 @@ const employees = [
   'yomotsu'
 ]
 
-const token = process.env.ENV_SLACK_TOKEN
+const token = process.env.ENV_SLACK_TOKEN || require('./.env').ENV_SLACK_TOKEN
 const options = {
   url: 'https://slack.com/api/users.list',
   method: 'POST',
@@ -37,7 +37,7 @@ const options = {
 }
 
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI || require('./.env').MONGODB_URI)
 
 const StatusSchema = new mongoose.Schema({status: Object})
 mongoose.model('Status', StatusSchema)
@@ -45,12 +45,9 @@ const Status = mongoose.model('Status')
 
 Status.findOne({}, (err, prev) => {
   const prevStatus = prev.status
-  console.log(prevStatus)
   request(options)
     .then(res => res.data)
     .then(body => {
-      console.log('------------------------\n')
-      console.log(body.ok)
       const status = body.members.reduce(function (ret, member) {
         if (employees.includes(member.name)) {
           ret[member.name] = {
@@ -61,10 +58,8 @@ Status.findOne({}, (err, prev) => {
         return ret
       }, {})
 
-       console.log(_.keys(status))
       const statusDiff = _.reduce(status, (ret, {status_emoji, status_text}, key) => {
-        console.log(ret,key, status_emoji, status_text)
-        console.log(prevStatus[key])
+        if (!prevStatus[key] || _.isUndefined(status_emoji) || _.isUndefined(status_text)) return ret
         if (prevStatus[key].status_emoji !== status_emoji || prevStatus[key].status_text !== status_text) {
           ret[key] = {
             status_text,
@@ -74,20 +69,20 @@ Status.findOne({}, (err, prev) => {
         return ret
       }, {})
 
-      console.log('status diff', statusDiff)
       if (_.keys(statusDiff).length === 0) {
         mongoose.connection.close()
       }
       else {
         webhook(statusDiff)
-        // mongooseでupdate
-        Status.update({_id: prevStatus._id}, {
-          $set: {
-            status: status
-          }
-        }, (err) => {
-          if (err) console.log(err)
-          mongoose.connection.close()
+        console.log(statusDiff)
+        Status.remove({}, (err) => {
+          if (err) throw err
+          const _status = new Status()
+          _status.status = status
+          _status.save((err) => {
+            if (err) throw err
+            mongoose.connection.close()
+          })
         })
       }
     })
@@ -105,7 +100,7 @@ function webhook(statusDiff) {
   }).join(`\n`)
 
   slack.webhook({
-    channel: '#times-nakajmg',
+    channel: '#test-pxgrid-bot',
     username: 'StatusNotifier',
     text: formatted,
     icon_emoji: ':robot_face:',
