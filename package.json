@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "axios": "^0.17.0",
+    "lodash": "^4.17.4",
     "mongoose": "^4.12.5",
     "slack-node": "^0.1.8"
   },
