@@ -48,6 +48,8 @@ Status.findOne({}, (err, prev) => {
   request(options)
     .then(res => res.data)
     .then(body => {
+      console.log('------------------------\n')
+      console.log(body.ok)
       const status = body.members.reduce(function (ret, member) {
         if (employees.includes(member.name)) {
           ret[member.name] = {
@@ -58,7 +60,9 @@ Status.findOne({}, (err, prev) => {
         return ret
       }, {})
 
+      console.log(status)
       const statusDiff = _.reduce(status, (ret, {status_emoji, status_text}, key) => {
+        console.log(ret, status_emoji, status_text)
         if (prevStatus[key].status_emoji !== status_emoji || prevStatus[key].status_text !== status_text) {
           ret[key] = {
             status_text,
