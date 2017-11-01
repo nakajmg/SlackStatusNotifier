@@ -45,6 +45,7 @@ const Status = mongoose.model('Status')
 
 Status.findOne({}, (err, prev) => {
   const prevStatus = prev.status
+  console.log(prevStatus)
   request(options)
     .then(res => res.data)
     .then(body => {
@@ -60,9 +61,9 @@ Status.findOne({}, (err, prev) => {
         return ret
       }, {})
 
-      console.log(status)
+      // console.log(status)
       const statusDiff = _.reduce(status, (ret, {status_emoji, status_text}, key) => {
-        console.log(ret, status_emoji, status_text)
+        console.log(ret,key, status_emoji, status_text)
         if (prevStatus[key].status_emoji !== status_emoji || prevStatus[key].status_text !== status_text) {
           ret[key] = {
             status_text,
@@ -88,6 +89,10 @@ Status.findOne({}, (err, prev) => {
           mongoose.connection.close()
         })
       }
+    })
+    .catch(err => {
+      mongoose.connection.close()
+      throw err
     })
 
 })
