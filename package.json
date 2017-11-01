@@ -1,6 +1,10 @@
 {
   "dependencies": {
     "axios": "^0.17.0",
+    "mongoose": "^4.12.5",
     "slack-node": "^0.1.8"
+  },
+  "engines": {
+    "node": "8.9.0"
   }
 }
