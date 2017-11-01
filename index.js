@@ -61,9 +61,10 @@ Status.findOne({}, (err, prev) => {
         return ret
       }, {})
 
-      // console.log(status)
+       console.log(_.keys(status))
       const statusDiff = _.reduce(status, (ret, {status_emoji, status_text}, key) => {
         console.log(ret,key, status_emoji, status_text)
+        console.log(prevStatus[key])
         if (prevStatus[key].status_emoji !== status_emoji || prevStatus[key].status_text !== status_text) {
           ret[key] = {
             status_text,
