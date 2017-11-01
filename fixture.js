@@ -40,8 +40,8 @@ request(options)
     const status = body.members.reduce(function (ret, member) {
       if (employees.includes(member.name)) {
         ret[member.name] = {
-          emoji: member.profile.status_emoji,
-          text: member.profile.status_text,
+          status_emoji: member.profile.status_emoji,
+          status_text: member.profile.status_text,
         }
       }
       return ret
