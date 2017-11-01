@@ -43,7 +43,7 @@ const StatusSchema = new mongoose.Schema({status: Object})
 mongoose.model('Status', StatusSchema)
 const Status = mongoose.model('Status')
 
-Status.findOne({}, (prev) => {
+Status.findOne({}, (err, prev) => {
   const prevStatus = prev.status
   request(options)
     .then(res => res.data)
