@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "axios": "^0.17.0",
+    "slack-node": "^0.1.8"
+  }
+}
