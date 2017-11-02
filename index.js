@@ -45,7 +45,7 @@ const Status = mongoose.model('Status')
 
 const exit = () => {
   mongoose.connection.close()
-  process.exit()
+//  process.exit()
 }
 
 !(async () => {
