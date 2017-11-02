@@ -46,11 +46,6 @@ request(options)
 
     const mongoose = require('mongoose')
     mongoose.connect(process.env.MONGODB_URI || require('./.env').MONGODB_URI)
-
-    const StatusSchema = new mongoose.Schema({
-      status: Object
-    })
-    mongoose.model('Status', StatusSchema)
     const Status = mongoose.model('Status')
 
     Status.remove({}, (err) => {

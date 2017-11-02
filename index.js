@@ -44,6 +44,9 @@ mongoose.model('Status', StatusSchema)
 const Status = mongoose.model('Status')
 
 Status.findOne({}, (err, prev) => {
+  if (err || !prev) {
+    return require('./fixture')
+  }
   const prevStatus = prev.status
   request(options)
     .then(res => res.data)
