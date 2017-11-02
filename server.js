@@ -1,5 +1,9 @@
 const fastify = require('fastify')()
 
+fastify.get('/', (req, rep) => {
+  rep.send('😋')
+})
+
 fastify.get('/statusnotifier', (req, rep) => {
   const token = req.query.token
   if (token) {
@@ -7,6 +11,9 @@ fastify.get('/statusnotifier', (req, rep) => {
       require('./index')
       rep.send('maru')
     }
+  }
+  else {
+    rep.send('batu')
   }
 })
 
