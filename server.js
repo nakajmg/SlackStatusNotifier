@@ -10,7 +10,7 @@ fastify.get('/statusnotifier', (req, rep) => {
   }
 })
 
-fastify.listen(3000, (err) => {
+fastify.listen(process.env.PORT, (err) => {
   if (err) throw err
   console.log(`server listening on ${fastify.server.address().port}`)
 })
