@@ -1,10 +1,10 @@
-const Slack = require('slack-node')
 const request = require('axios')
 const mongoose = require('mongoose')
-const _ = require('lodash')
+const Slack = require('slack-node')
 const slack = new Slack()
 const URI = process.env.ENV_SLACK_HOOK || require('./.env').ENV_SLACK_HOOK
 slack.setWebhook(URI)
+const {reduce, isUndefined, keys} = require('lodash')
 
 const employees = [
   'kyosuke',
@@ -43,60 +43,59 @@ const StatusSchema = new mongoose.Schema({status: Object})
 mongoose.model('Status', StatusSchema)
 const Status = mongoose.model('Status')
 
-Status.findOne({}, (err, prev) => {
-  if (err || !prev) {
+const exit = () => {
+  mongoose.connection.close()
+  process.exit()
+}
+
+!(async () => {
+  const data = await Status.findOne({}).catch(err => err)
+  if (!data || data instanceof Error) {
     return require('./fixture')
   }
-  const prevStatus = prev.status
-  request(options)
-    .then(res => res.data)
-    .then(body => {
-      const status = body.members.reduce(function (ret, member) {
-        if (employees.includes(member.name)) {
-          ret[member.name] = {
-            status_emoji: member.profile.status_emoji,
-            status_text: member.profile.status_text,
-          }
-        }
-        return ret
-      }, {})
+  const prevStatus = data.status
+  const body = await request(options).then(res => res.data).catch((err) => {
+    exit()
+  })
+  if (body.ok === false) return exit()
 
-      const statusDiff = _.reduce(status, (ret, {status_emoji, status_text}, key) => {
-        if (!prevStatus[key] || _.isUndefined(status_emoji) || _.isUndefined(status_text)) return ret
-        if (prevStatus[key].status_emoji !== status_emoji || prevStatus[key].status_text !== status_text) {
-          ret[key] = {
-            status_text,
-            status_emoji
-          }
-        }
-        return ret
-      }, {})
-
-      if (_.keys(statusDiff).length === 0) {
-        mongoose.connection.close()
+  const status = body.members.reduce(function (ret, member) {
+    if (employees.includes(member.name)) {
+      ret[member.name] = {
+        status_emoji: member.profile.status_emoji,
+        status_text: member.profile.status_text,
       }
-      else {
-        webhook(statusDiff)
-        console.log(statusDiff)
-        Status.remove({}, (err) => {
-          if (err) throw err
-          const _status = new Status()
-          _status.status = status
-          _status.save((err) => {
-            if (err) throw err
-            mongoose.connection.close()
-          })
-        })
-      }
-    })
-    .catch(err => {
-      mongoose.connection.close()
-      throw err
-    })
+    }
+    return ret
+  }, {})
 
-})
+  const statusDiff = reduce(status, (ret, {status_emoji, status_text}, key) => {
+    if (!prevStatus[key] || isUndefined(status_emoji) || isUndefined(status_text)) return ret
+    if (prevStatus[key].status_emoji !== status_emoji || prevStatus[key].status_text !== status_text) {
+      ret[key] = {
+        status_text,
+        status_emoji
+      }
+    }
+    return ret
+  }, {})
+
+  if (keys(statusDiff).length === 0) return exit()
+
+  webhook(statusDiff)
+
+  await Status.remove({})
+  const _status = new Status()
+  _status.status = status
+  _status.save((err) => {
+    mongoose.connection.close()
+    if (err) throw err
+  })
+
+})()
 
 function webhook(statusDiff) {
+  console.log(statusDiff)
   const formatted = Object.keys(statusDiff).map(function (name) {
     const member = statusDiff[name]
     return `${member.status_emoji ? member.status_emoji : ':grey_question:'} *${name}* - ${member.status_text ? member.status_text : '?'}`
