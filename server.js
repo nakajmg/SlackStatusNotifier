@@ -4,11 +4,12 @@ fastify.get('/', (req, rep) => {
   rep.send('😋')
 })
 
-fastify.get('/statusnotifier', (req, rep) => {
+fastify.get('/statusnotifier', async(req, rep) => {
   const token = req.query.token
   if (token) {
-    if (token === process.env.CGP_TOKEN) {
-      require('./index')
+    if (token === process.env.CGP_TOKEN || require('./.env').SERVER_TOKEN) {
+      delete require.cache[require.resolve('./notify')]
+      await require('./notify')()
       rep.send('maru')
     }
   }
@@ -17,7 +18,7 @@ fastify.get('/statusnotifier', (req, rep) => {
   }
 })
 
-fastify.listen(process.env.PORT, (err) => {
+fastify.listen(process.env.PORT || 8000, (err) => {
   if (err) throw err
   console.log(`server listening on ${fastify.server.address().port}`)
 })
