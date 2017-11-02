@@ -31,9 +31,9 @@ const options = {
   },
 }
 
-request(options)
+return request(options)
   .then(res => res.data)
-  .then(body => {
+  .then(async body => {
     const status = body.members.reduce(function (ret, member) {
       if (employees.includes(member.name)) {
         ret[member.name] = {
@@ -45,16 +45,21 @@ request(options)
     }, {})
 
     const mongoose = require('mongoose')
-    mongoose.connect(process.env.MONGODB_URI || require('./.env').MONGODB_URI)
+    mongoose.Promise = require('bluebird')
+    await mongoose.connect(process.env.MONGODB_URI || require('./.env').MONGODB_URI, {useMongoClient: true})
     const Status = mongoose.model('Status')
 
-    Status.remove({}, (err) => {
-      if (err) throw err
-      const _status = new Status()
-      _status.status = status
-      _status.save((err) => {
+    return new Promise((resolve, reject) => {
+      Status.remove({}, (err) => {
         if (err) throw err
-        mongoose.connection.close()
+        const _status = new Status()
+        _status.status = status
+        _status.save((err) => {
+          if (err) throw err
+          mongoose.connection.close()
+          resolve()
+        })
       })
     })
+
   })

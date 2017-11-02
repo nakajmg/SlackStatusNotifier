@@ -1,5 +1,6 @@
 const request = require('axios')
 const mongoose = require('mongoose')
+mongoose.Promise = require('bluebird');
 const Slack = require('slack-node')
 const slack = new Slack()
 const URI = process.env.ENV_SLACK_HOOK || require('./.env').ENV_SLACK_HOOK
@@ -36,9 +37,11 @@ const options = {
   },
 }
 
-module.exports = function() {
+module.exports = async function() {
 
-  mongoose.connect(process.env.MONGODB_URI || require('./.env').MONGODB_URI)
+  await mongoose.connect(process.env.MONGODB_URI || require('./.env').MONGODB_URI, {
+    useMongoClient: true
+  })
 
   try {
     mongoose.model('Status')
@@ -58,7 +61,8 @@ module.exports = function() {
 
     const data = await Status.findOne({}).catch(err => err)
     if (!data || data instanceof Error) {
-      return require('./fixture')
+      await require('./fixture')
+      resolve()
     }
     const prevStatus = data.status
     const body = await request(options).then(res => res.data).catch((err) => {
@@ -87,7 +91,10 @@ module.exports = function() {
       return ret
     }, {})
 
-    if (keys(statusDiff).length === 0) return exit()
+    if (keys(statusDiff).length === 0) {
+      console.log('no diff')
+      return exit()
+    }
 
     await Status.remove({})
     const _status = new Status()

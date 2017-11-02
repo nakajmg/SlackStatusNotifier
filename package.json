@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "axios": "^0.17.0",
+    "bluebird": "^3.5.1",
     "fastify": "^0.31.0",
     "lodash": "^4.17.4",
     "mongoose": "^4.12.5",
