@@ -102,7 +102,7 @@ function webhook(statusDiff) {
   }).join(`\n`)
 
   slack.webhook({
-    channel: '#test-pxgrid-bot',
+    channel: '#pxgrid-status',
     username: 'StatusNotifier',
     text: formatted,
     icon_emoji: ':robot_face:',
