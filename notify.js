@@ -114,16 +114,26 @@ function webhook(statusDiff) {
     console.log(statusDiff)
     const formatted = Object.keys(statusDiff).map(function (name) {
       const member = statusDiff[name]
-      return `${member.status_emoji ? member.status_emoji : ':grey_question:'} *${name}* - ${member.status_text ? member.status_text : '?'}`
-    }).join(`\n`)
+      return {
+        title: name,
+        value: `${member.status_emoji ? member.status_emoji : ':grey_question:'} ${member.status_text ? member.status_text : ''}`,
+        short: true
+      }
+    })
 
     slack.webhook({
       channel: '#pxgrid-status',
       username: 'StatusNotifier',
-      text: formatted,
+      attachments: [
+        {
+          color: '#0576b9',
+          title: "ステータス ガ カワリマシタ",
+          fields: formatted
+        }
+      ],
       icon_emoji: ':robot_face:',
     }, (err, res) => {
-      console.log(res.status)
+      console.log(res)
       resolve()
     })
   })
