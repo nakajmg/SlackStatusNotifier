@@ -124,11 +124,11 @@ function webhook(statusDiff, prevStatus) {
 
     slack.webhook({
       channel: '#pxgrid-status',
-      username: 'StatusNotifier',
+      username: 'ステータス ガ カワリマシタ',
       attachments: [
         {
           color: '#0a9b94',
-          title: "ステータス ガ カワリマシタ",
+          title: '',
           fields,
         }
       ],
