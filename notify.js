@@ -104,31 +104,32 @@ module.exports = async function() {
       if (err) throw err
     })
 
-    await webhook(statusDiff)
+    await webhook(statusDiff, prevStatus)
     resolve()
   })
 }
 
-function webhook(statusDiff) {
+function webhook(statusDiff, prevStatus) {
+  console.log(statusDiff)
   return new Promise((resolve, reject) => {
-    console.log(statusDiff)
-    const formatted = Object.keys(statusDiff).map(function (name) {
-      const member = statusDiff[name]
-      return {
+    const fields = reduce(statusDiff, (ret, status, name) => {
+      const prev = prevStatus[name]
+      ret.push({
         title: name,
-        value: `${member.status_emoji ? member.status_emoji : ':grey_question:'} ${member.status_text ? member.status_text : ''}`,
-        short: true
-      }
-    })
+        value: `${status.status_emoji ? status.status_emoji : ':grey_question:'} ${status.status_text ? status.status_text : ''}` + `\t<=\t ${prev.status_emoji ? prev.status_emoji : ':grey_question:'} ${prev.status_text ? prev.status_text : ''} `,
+        short: true,
+      })
+      return ret
+    }, [])
 
     slack.webhook({
       channel: '#pxgrid-status',
       username: 'StatusNotifier',
       attachments: [
         {
-          color: '#0576b9',
+          color: '#0a9b94',
           title: "ステータス ガ カワリマシタ",
-          fields: formatted
+          fields,
         }
       ],
       icon_emoji: ':robot_face:',
