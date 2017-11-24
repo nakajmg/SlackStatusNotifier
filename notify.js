@@ -117,7 +117,7 @@ function webhook(statusDiff, prevStatus) {
       ret.push({
         title: name,
         value: `${status.status_emoji ? status.status_emoji : ':grey_question:'} ${status.status_text ? status.status_text : ''}` + `\t<=\t ${prev.status_emoji ? prev.status_emoji : ':grey_question:'} ${prev.status_text ? prev.status_text : ''} `,
-        short: true,
+        short: false,
       })
       return ret
     }, [])
